@@ -1,0 +1,37 @@
+name: Base OS
+formatVersion: 1
+#-------------------------INPUTS-------------------------#
+inputs:
+  operatingSystem:
+    type: string
+    # Set the values below as 'image name,customisation spec'
+    oneOf:
+      - title: Microsoft Windows Server 2019
+        const: 'windows-server-2019,windows-spec'
+      - title: CentOS Server 7.9
+        const: 'centos-79,linux-spec'
+      - title: CentOS Server 8.3
+        const: 'centos-83,linux-spec'
+      - title: CentOS Server 8.4
+        const: 'centos-83,linux-spec'
+    title: Operating System
+    description: Select an operating system and version.
+#------------------------RESOURCES-----------------------#    
+resources:
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    properties:
+      image: '${split(input.operatingSystem,",")[0]}'
+      customizationSpec: '${split(input.operatingSystem,",")[1]}'
+      flavor: small
+      constraints:
+        - tag: 'cloud:private'
+      networks:
+        - network: '${resource.Cloud_NSX_Network_1.id}'
+          assignment: static
+  Cloud_NSX_Network_1:
+    type: Cloud.NSX.Network
+    properties:
+      networkType: existing
+      constraints:
+        - tag: Net-T00-Dev
