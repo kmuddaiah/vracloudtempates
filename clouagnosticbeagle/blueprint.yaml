@@ -1,0 +1,181 @@
+# ------------------------------------------------------------------------
+# Templates need a descriptive name and version if
+# source controlled in git.
+# ------------------------------------------------------------------------
+name: Beagle Cloud Agnostic Template
+formatVersion: 1
+version: 1
+#
+# ------------------------------------------------------------------------
+# Inputs create user selections that appear at deployment time. Inputs 
+# can set placement decisions and configurations, and are referenced 
+# later, by the resources section.
+# ------------------------------------------------------------------------
+inputs:
+# ------------------------------------------------------------------------
+# Choose a Target Cloud. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetCloud:
+    type: string
+    title: Select the Cloud
+    oneOf: 
+      - title: Public
+        const: public
+      - title: Private
+        const: private
+# ------------------------------------------------------------------------
+# Choose a Target Region. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# Region A and B are for On-Primise SDDC and Australia East and Souteast are for Azure
+# ------------------------------------------------------------------------
+  targetRegion:
+    type: string
+    title: Select the Region
+    oneOf: 
+      - title: Region A
+        const: aue
+      - title: Region B
+        const: aus       
+      - title: Australia East
+        const: aze
+      - title: Australia Southeast
+        const: azs
+# ------------------------------------------------------------------------
+# Choose a Target Environment. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetEnv:
+    type: string
+    title: Target Environment
+    oneOf:
+      - title: Production
+        const: prd
+      - title: Staging
+        const: stg
+      - title: UAT
+        const: uat
+      - title: Test
+        const: tst
+      - title: Development
+        const: dev
+# ------------------------------------------------------------------------
+# Choose a Target Environment. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetFunction:
+    type: string
+    title: Server Function
+    oneOf:
+      - title: Web
+        const: web
+      - title: Application
+        const: app
+      - title: Database
+        const: db
+# ------------------------------------------------------------------------
+# Choose a Application Type. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetApplicationClassification:
+    type: string
+    title: Application Classification
+    oneOf:
+      - title: Mission Critical
+        const: mc
+      - title: Business Critical
+        const: bc
+      - title: Business Important
+        const: bi
+# ------------------------------------------------------------------------
+# Choose a Server Size. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetServersize:
+    type: string
+    title: Server Size
+    oneOf:
+      - title: 32vCPU-128GB
+        const: 32vCPU-128GB
+      - title: 16vCPU-64GB
+        const: 16vCPU-64GB
+      - title: 8vCPU-32GB
+        const: 8vCPU-32GB
+      - title: 8vCPU-16GB
+        const: 8vCPU-16GB
+      - title: 4vCPU-16GB
+        const: 4vCPU-16GB
+      - title: 4vCPU-8GB
+        const: 4vCPU-8GB
+      - title: 2vCPU-8GB
+        const: 2vCPU-8GB
+      - title: 2vCPU-4GB
+        const: 2vCPU-4GB
+      - title: 1vCPU-2GB
+        const: 1vCPU-2GB
+# 
+# ------------------------------------------------------------------------
+# Choose the operating system. Note that the Cloud Assembly
+# Infrastructure must also have an On-Primise SDDC, Azure image mapping 
+# Choose a Operating System. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# that identifies image name in the flavor mapping and custom specs 
+# but having this input stubbed in lets you add more operating systems later. 
+# ------------------------------------------------------------------------
+  operatingSystem:
+    type: string
+    # Set the values below as 'image name,customisation spec'
+    oneOf:
+      - title: Microsoft Windows Server 2019
+        const: 'windows-server-2019,windows-spec'
+      - title: CentOS Server 7.9
+        const: 'centos-79,linux-spec'
+      - title: CentOS Server 8.3
+        const: 'centos-83,linux-spec'
+    title: Operating System
+    description: Select an operating system and version.
+#
+# ------------------------------------------------------------------------
+# The resources section configures the deployment of machines, disks, 
+# networks, and other objects. In several places, the code pulls from 
+# the preceding interactive user inputs.
+# ------------------------------------------------------------------------
+resources:
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    properties:
+      image: '${split(input.operatingSystem,",")[0]}'
+      customizationSpec: '${split(input.operatingSystem,",")[1]}'
+      #image: Windows2016
+      flavor: '${input.targetServersize}'
+      targetCloud: '${input.targetCloud}'
+      targetRegion: '${input.targetRegion}'
+      targetEnv: '${input.targetEnv}'
+      targetFunction: '${input.targetFunction}'
+      targetApplicationClassification: '${input.targetApplicationClassification}'
+      networks:
+        - network: '${resource.Cloud_Network_1.id}'
+      attachedDisks: []
+      count: 1
+    constraints:
+    - tag: '${input.targetCloud}'
+    - tag: '${input.targetRegion}'
+    - tag: '${input.targetEnv}'
+    - tag: '${input.targetFunction}'
+    - tag:  '${input.targetApplicationClassification}'
+  Cloud_Network_1:
+    type: Cloud.Network
+    properties:
+      networkType: existing
