@@ -178,8 +178,6 @@ resources:
       targetEnv: '${input.targetEnv}'
       targetFunction: '${input.targetFunction}'
       targetApplicationClassification: '${input.targetApplicationClassification}'
-      networks:
-        - network: '${resource.Cloud_Network_1.id}'
       attachedDisks: []
       count: 1
     constraints:
@@ -190,6 +188,8 @@ resources:
     - tag:  '${input.targetApplicationClassification}'
     networks:
       - network: '${resource.Cloud_NSX_Network_1.id}'
+        assignment: static
+      - network: '${resource.Cloud_NSX_Network_2.id}'
         assignment: static
   Cloud_NSX_Network_1:
     type: Cloud.NSX.Network
