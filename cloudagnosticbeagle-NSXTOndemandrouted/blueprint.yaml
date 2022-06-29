@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------
 name: Beagle Cloud Agnostic Template
 formatVersion: 1
-version: 1
+version: 1.1
 #
 # ------------------------------------------------------------------------
 # Inputs create user selections that appear at deployment time. Inputs 
