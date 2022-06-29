@@ -151,10 +151,14 @@ inputs:
 # NSX-T On-Demand routed Network Creation
 # https://288clouds.com/2020-03-16-vra8-blueprint-nsxt-on-demand-routed-network.html
 #-------------------------------------------------------------------------
-  network-name:
+  production-network:
     type: string
-    title: network-name
-    default: on-demand-ov
+    title: production-network
+    default: on-demand-prod
+  management-network:
+    type: string
+    title: production-network
+    default: on-demand-mgmt
 #
 # ------------------------------------------------------------------------
 # The resources section configures the deployment of machines, disks, 
@@ -191,4 +195,9 @@ resources:
     type: Cloud.NSX.Network
     properties:
       networkType: routed
-      name: '${input.network-name}'
+      name: '${input.production-network}'
+  Cloud_NSX_Network_2:
+    type: Cloud.NSX.Network
+    properties:
+      networkType: routed
+      name: '${input.management-network}'
