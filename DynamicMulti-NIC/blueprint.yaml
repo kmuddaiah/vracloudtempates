@@ -132,6 +132,7 @@ inputs:
 # 2. Inputs for NIC existence
 # 3 Network Resources
 # 4. VM Resource and Network Resource assignment
+#  Reference : https://luchodelorenzi.com/2021/09/09/configuring-a-dynamic-multi-nic-cloud-template-in-vra-8-x/
 # -----------------------------------------------------------------------------------------------------------
 # 1. Inputs for Network to NIC mapping based on tagging
 # This cloud template will allow for configurations of up to 4 NICs, and since we have 4 networks, 
