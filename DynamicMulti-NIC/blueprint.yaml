@@ -230,7 +230,9 @@ resources:
       targetFunction: '${input.targetFunction}'
       targetApplicationClassification: '${input.targetApplicationClassification}'
       networks:
-        - network: '${resource.Cloud_Network_1.id}'
+        - network:  '${map_by(resource.Network1[*] + resource.Network2[*] + resource.Network3[*] + resource.Network4[*], r => {"network":r.id, "assignment":"static", "deviceIndex":r.deviceIndex})}'
+      constraints:
+        - tag: 'env:production'
       attachedDisks: []
       count: 1
     constraints:
@@ -239,7 +241,45 @@ resources:
     - tag: '${input.targetEnv}'
     - tag: '${input.targetFunction}'
     - tag:  '${input.targetApplicationClassification}'
-  Cloud_Network_1:
-    type: Cloud.Network
+#  
+#-------------------------------------------------------------------------------------------
+# To manage the configuration of the NICs and networks, the network resources for NICs 2, 3 and 4 will use a count property, 
+# and this property’s result (either 0 if it doesn’t exist, or 1 if it does exist) will be based on the result of the inputs. Network 1 will not use that property
+# Also, we will use the deviceIndex property to maintain consistency with the numbering – So the network resources look like this
+#-----------------------------------------------------------------------------------------------------------------------------------
+  Network1:
+    type: Cloud.vSphere.Network
+    count: 1
     properties:
       networkType: existing
+      deviceIndex: 0
+      constraints:
+        - tag: '${input.Network1}'
+        - tag: 'env:production'
+  Network2:
+    type: Cloud.vSphere.Network
+    properties:
+      networkType: existing
+      count: '${input.needNIC2 == true ? 1 : 0}'
+      deviceIndex: 1
+      constraints:
+        - tag: '${input.Network2}'
+        - tag: 'env:production'
+  Network3:
+    type: Cloud.vSphere.Network
+    properties:
+      networkType: existing
+      count: '${input.needNIC3 == true ? 1 : 0}'
+      deviceIndex: 2
+      constraints:
+        - tag: '${input.Network3}'
+        - tag: 'env:production'
+  Network4:
+    type: Cloud.vSphere.Network
+    properties:
+      networkType: existing
+      count: '${input.needNIC4 == true ? 1 : 0}'
+      deviceIndex: 3
+      constraints:
+        - tag: '${input.Network4}'
+        - tag: 'env:production'
