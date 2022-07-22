@@ -1,0 +1,245 @@
+# ------------------------------------------------------------------------
+# Templates need a descriptive name and version if
+# source controlled in git.
+# ------------------------------------------------------------------------
+name: Beagle Cloud Agnostic Template
+formatVersion: 1
+version: 1
+#
+# ------------------------------------------------------------------------
+# Inputs create user selections that appear at deployment time. Inputs 
+# can set placement decisions and configurations, and are referenced 
+# later, by the resources section.
+# ------------------------------------------------------------------------
+inputs:
+# ------------------------------------------------------------------------
+# Choose a Target Cloud. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetCloud:
+    type: string
+    title: Select the Cloud
+    oneOf: 
+      - title: Public
+        const: public
+      - title: Private
+        const: private
+# ------------------------------------------------------------------------
+# Choose a Target Region. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# Region A and B are for On-Primise SDDC and Australia East and Souteast are for Azure
+# ------------------------------------------------------------------------
+  targetRegion:
+    type: string
+    title: Select the Region
+    oneOf: 
+      - title: Region A
+        const: aue
+      - title: Region B
+        const: aus       
+      - title: Australia East
+        const: aze
+      - title: Australia Southeast
+        const: azs
+# ------------------------------------------------------------------------
+# Choose a Target Environment. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetEnv:
+    type: string
+    title: Target Environment
+    oneOf:
+      - title: Production
+        const: prd
+      - title: Staging
+        const: stg
+      - title: UAT
+        const: uat
+      - title: Test
+        const: tst
+      - title: Development
+        const: dev
+# ------------------------------------------------------------------------
+# Choose a Target Environment. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetFunction:
+    type: string
+    title: Server Function
+    oneOf:
+      - title: Web
+        const: web
+      - title: Application
+        const: app
+      - title: Database
+        const: db
+# ------------------------------------------------------------------------
+# Choose a Application Type. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetApplicationClassification:
+    type: string
+    title: Application Classification
+    oneOf:
+      - title: Mission Critical
+        const: mc
+      - title: Business Critical
+        const: bc
+      - title: Business Important
+        const: bi
+# ------------------------------------------------------------------------
+# Choose a Server Size. 'Title' is the visible 
+# option text (oneOf allows for the friendly title). 'Const' is the 
+# tag that identifies the endpoint, which was set up earlier, under the 
+# Cloud Assembly Infrastructure tab.
+# ------------------------------------------------------------------------
+  targetServersize:
+    type: string
+    title: Server Size
+    oneOf:
+      - title: 32vCPU-128GB
+        const: 32vCPU-128GB
+      - title: 16vCPU-64GB
+        const: 16vCPU-64GB
+      - title: 8vCPU-32GB
+        const: 8vCPU-32GB
+      - title: 8vCPU-16GB
+        const: 8vCPU-16GB
+      - title: 4vCPU-16GB
+        const: 4vCPU-16GB
+      - title: 4vCPU-8GB
+        const: 4vCPU-8GB
+      - title: 2vCPU-8GB
+        const: 2vCPU-8GB
+      - title: 2vCPU-4GB
+        const: 2vCPU-4GB
+      - title: 1vCPU-2GB
+        const: 1vCPU-2GB
+# 
+# -----------------------------------------------------------------------------------------------------------
+# To get the Dynamic Multi-NIC configuration on the Cloud Template to work, we need the following things:
+# 1. Inputs for Network to NIC mapping based on tagging
+# 2. Inputs for NIC existence
+# 3 Network Resources
+# 4. VM Resource and Network Resource assignment
+# -----------------------------------------------------------------------------------------------------------
+# 1. Inputs for Network to NIC mapping based on tagging
+# This cloud template will allow for configurations of up to 4 NICs, and since we have 4 networks, 
+# we should let the requester select, for each #NIC, what networks can be use
+#------------------------------------------------------------------------------------------------------------
+ Network1:
+    type: string
+    description: Select Network to Attach to
+    default: 'net:application'
+    title: Network 1
+    oneOf:
+      - title: Application Network
+        const: 'net:application'
+      - title: Frontend Network
+        const: 'net:frontend'
+      - title: Database Network
+        const: 'net:database'
+      - title: Backup Network
+        const: 'net:backup'
+  Network2:
+    type: string
+    description: Select Network to Attach to
+    default: 'net:frontend'
+    title: Network 2
+    oneOf:
+      - title: Application Network
+        const: 'net:application'
+      - title: Frontend Network
+        const: 'net:frontend'
+      - title: Database Network
+        const: 'net:database'
+      - title: Backup Network
+        const: 'net:backup'
+  Network3:
+    type: string
+    description: Select Network to Attach to
+    default: 'net:database'
+    title: Network 3
+    oneOf:
+      - title: Application Network
+        const: 'net:application'
+      - title: Frontend Network
+        const: 'net:frontend'
+      - title: Database Network
+        const: 'net:database'
+      - title: Backup Network
+        const: 'net:backup'
+  Network4:
+    type: string
+    description: Select Network to Attach to
+    default: 'net:backup'
+    title: Network 4
+    oneOf:
+      - title: Application Network
+        const: 'net:application'
+      - title: Frontend Network
+        const: 'net:frontend'
+      - title: Database Network
+        const: 'net:database'
+      - title: Backup Network
+        const: 'net:backup'
+# ------------------------------------------------------------------------
+# 2. Inputs for NIC existence
+## Other than the first NIC (which should always exist, otherwise our VM(s) wouldn’t have any network connectivity, 
+# we want to be able to deploy VMs with 1, 2, 3, and 4 NICs, using the same Cloud Template.
+# To achieve that, we will create 3 Boolean Inputs that will define if a NIC should be added or not.
+# ------------------------------------------------------------------------
+  needNIC2:
+    type: boolean
+    title: Add 2nd NIC?
+    default: false
+  needNIC3:
+    type: boolean
+    title: Add 3rd NIC?
+    default: false
+  needNIC4:
+    type: boolean
+    title: Add 4th NIC?
+    default: false
+# ------------------------------------------------------------------------
+# The resources section configures the deployment of machines, disks, 
+# networks, and other objects. In several places, the code pulls from 
+# the preceding interactive user inputs.
+# ------------------------------------------------------------------------
+resources:
+  Cloud_Machine_1:
+    type: Cloud.Machine
+    properties:
+      image: '${split(input.operatingSystem,",")[0]}'
+      customizationSpec: '${split(input.operatingSystem,",")[1]}'
+      #image: Windows2016
+      flavor: '${input.targetServersize}'
+      targetCloud: '${input.targetCloud}'
+      targetRegion: '${input.targetRegion}'
+      targetEnv: '${input.targetEnv}'
+      targetFunction: '${input.targetFunction}'
+      targetApplicationClassification: '${input.targetApplicationClassification}'
+      networks:
+        - network: '${resource.Cloud_Network_1.id}'
+      attachedDisks: []
+      count: 1
+    constraints:
+    - tag: '${input.targetCloud}'
+    - tag: '${input.targetRegion}'
+    - tag: '${input.targetEnv}'
+    - tag: '${input.targetFunction}'
+    - tag:  '${input.targetApplicationClassification}'
+  Cloud_Network_1:
+    type: Cloud.Network
+    properties:
+      networkType: existing
