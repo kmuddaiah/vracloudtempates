@@ -174,7 +174,7 @@ resources:
     - tag: '${input.targetRegion}'
     - tag: '${input.targetEnv}'
     - tag: '${input.targetFunction}'
-    - tag:  '${input.targetApplicationClassification}'
+    - tag: '${input.targetApplicationClassification}'
   Cloud_Network_1:
     type: Cloud.Network
     properties:
